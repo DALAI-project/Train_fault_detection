@@ -42,8 +42,7 @@ class RandAug:
             trans = transforms.Compose([
                             transforms.Resize((self.img_size,self.img_size)),
                             transforms.ToTensor(),
-                            transforms.ColorJitter(brightness=rand_brightness, contrast=rand_contrast, saturation=rand_saturation, hue=rand_hue),
-                            transforms.Resize((self.img_size,self.img_size))
+                            transforms.ColorJitter(brightness=rand_brightness, contrast=rand_contrast, saturation=rand_saturation, hue=rand_hue)
                         ])
             img = trans(img)
 
@@ -52,8 +51,7 @@ class RandAug:
             trans = transforms.Compose([
                             transforms.Resize((self.img_size,self.img_size)),
                             transforms.ToTensor(),
-                            transforms.RandomAdjustSharpness(sharpness, p=1),
-                            transforms.Resize((self.img_size,self.img_size))
+                            transforms.RandomAdjustSharpness(sharpness, p=1)
                         ])
             img = trans(img)
 
@@ -62,8 +60,7 @@ class RandAug:
             trans = transforms.Compose([
                             transforms.Resize((self.img_size,self.img_size)),
                             transforms.ToTensor(),
-                            transforms.GaussianBlur(kernel, sigma=(0.1, 2.0)),
-                            transforms.Resize((self.img_size,self.img_size))
+                            transforms.GaussianBlur(kernel, sigma=(0.1, 2.0))
                         ])
             img = trans(img)
 
