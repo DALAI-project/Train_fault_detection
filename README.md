@@ -65,36 +65,37 @@ Parameters:
 - `save_model_path` defines the folder where the model file is saved. Default folder path is `./models/`.
 - `save_model_format` defines the format in which the model is saved. The available options are PyTorch (`torch`) and ONNX (`onnx`) formats. Default format is `onnx`.
 
+The parameter values can be set in command line when initiating training:
+
+`python --results_folder ./results --save_model_path ./models/ --save_model_format onnx train.py`
+
 ### Parameters related to model training
 
 A Number of parameters are used for defining the conditions for model training. 
 
 Learning rate defines how much the model weights are tuned after each iteration based on the gradient of the loss function. In the code, there are different learning rates for the classification layer and the pretrained layers of the base model. The `lr` parameter defines the learning rate for the base model layers, and the learning rate for the classification layer is automatically set to be 10 times larger.
 
-Batch size 
+Batch size defines the number of images that are processed before the model weights are updated. Number of epochs, on the other hand, defines how many times during the training the model goes through the entire training dataset. Early stopping is a method used for reducing overfitting by stopping training after a specific learning metric (loss, accuracy etc.) has not improved during a defined number of epochs.
+
+Random seed parameter is used for setting the seed for initializing random number generation. This makes the training results reproducible when using the same seed, model and data. 
 
 Parameters:
 - `lr` defines the learning rate used for adjusting the weights of the base model layers. The learning rate for the classification layer is always 10 times larger. Default value for the base learning rate is `0.0001`.
+- `batch_size` defines the number of images in one batch. Default batch size is `16`.
+- `num_epochs` sets the number of times the model goes through the entire training dataset. Default value is `15`.
+- `early_stop_threshold` defines the number of epochs that training can go on without improvement in the chosen metric (validation F1 score by default). Default value is `2`.
+-  `random_seed` sets the seed for initializing random number generation. Default value is `8765`.
+
+The parameter values can be set in command line when initiating training:
+
+`python --lr 0.0001 --batch_size 16 --num_epochs 15 --early_stop_threshold 2 --random_seed 8765 train.py`
+
+### Parameter for data augmentation
+
+Data augmentations are used for increasing the diversity of the data and thus for helping to reduce overfitting. The available augmentation options are
 - 
 
-parser.add_argument('--batch_size', type=int, default=16,
-                    help='Batch size used for model training. ')
-parser.add_argument('--lr', type=float, default=0.0001,
-                    help='Base learning rate.')
-parser.add_argument('--num_classes', type=int, default=2,
-                    help='Number of classes used in classification.')
-parser.add_argument('--num_epochs', type=int, default=15,
-                    help='Number of training epochs.')
-parser.add_argument('--random_seed', type=int, default=8765,
-                    help='Number used for initializing random number generation.')
-parser.add_argument('--early_stop_threshold', type=int, default=2,
-                    help='Threshold value of epochs after which training stops if validation accuracy does not improve.')
 
-parser.add_argument('--augment_choice', type=str, default=None,
-                    help='Defines which image augmentation(s) are used. Defaults to randomly selected augmentations.')
+Parameter:
+-  `augment_choice` defines which image augmentation(s) are used during model training. Default value is `None`.  
 
-
-
-## Data
-
-By default, the 
