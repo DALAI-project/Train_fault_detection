@@ -131,4 +131,4 @@ Parameter:
 
 The parameter value can be set in command line when initiating training:
 
-`python train.py --augment_choice None`
+`python train.py --augment_choice identity`
