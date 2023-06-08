@@ -39,18 +39,37 @@ The different model parameters are explained in more detail below.
 
 ### Parameters related to training and validation data
 
-By default, the code expects the images containing faults (for instance sticky notes or folded corners) and the images without faults to be located in separate folders.
+By default, the code expects the following folder structure:
+
+```
+├──fault_detection 
+      ├──models
+      ├──results 
+      ├──data
+      |   ├──faulty
+      |   |   ├──train
+      |   |   └──val
+      |   └──ok
+      |       ├──train
+      |       └──val
+      ├──train.py
+      ├──utils.py
+      ├──augment.py
+      └──requirements.txt
+```
+
+Therefore the images containing faults (for instance sticky notes or folded corners) and the images without faults to be located in separate folders.
 In addition, train and validation data for both types of images is also expected to be located in separate folders.
 
 Parameters:
-- `tr_data_folder` defines the folder where the training data containing faults is located. Default folder path is `./data/faulty/train/`.
-- `val_data_folder` defines the folder where the validation data containing faults is located. Default folder path is `./data/faulty/val/`.
-- `tr_ok_folder` defines the folder where the training data that does not contain faults is located. Default folder path is `./data/ok/train/`.
-- `val_ok_folder` defines the folder where the validation data that does not contain faults is located. Default folder path is `./data/ok/val/`.
+- `tr_data_folder` defines the folder where the training data containing faults is located. Default folder path is `./data/faulty/train`.
+- `val_data_folder` defines the folder where the validation data containing faults is located. Default folder path is `./data/faulty/val`.
+- `tr_ok_folder` defines the folder where the training data that does not contain faults is located. Default folder path is `./data/ok/train`.
+- `val_ok_folder` defines the folder where the validation data that does not contain faults is located. Default folder path is `./data/ok/val`.
 
 The parameter values can be set in command line when initiating training:
 
-`python --tr_data_folder ./data/faulty/train/ --val_data_folder ./data/faulty/val/ --tr_ok_folder ./data/ok/train/ --val_ok_folder ./data/ok/val/ train.py`
+`python --tr_data_folder ./data/faulty/train --val_data_folder ./data/faulty/val --tr_ok_folder ./data/ok/train --val_ok_folder ./data/ok/val train.py`
 
 The accepted input image file types are .jpg, .png and .tiff. Pdf files should be transformed into one of these images formats before used as an input to the model.
 
@@ -62,7 +81,7 @@ The trained model is saved by default after each epoch when the validation F1 sc
 
 Parameters:
 - `results_folder` defines the folder where the plots of the training an validation metrics (loss, accuracy, F1-score) and learning rates are saved. Default folder path is `./results`.
-- `save_model_path` defines the folder where the model file is saved. Default folder path is `./models/`.
+- `save_model_path` defines the folder where the model file is saved. Default folder path is `./models`.
 - `save_model_format` defines the format in which the model is saved. The available options are PyTorch (`torch`) and ONNX (`onnx`) formats. Default format is `onnx`.
 
 The parameter values can be set in command line when initiating training:
