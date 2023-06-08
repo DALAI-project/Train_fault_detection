@@ -93,8 +93,16 @@ The parameter values can be set in command line when initiating training:
 ### Parameter for data augmentation
 
 Data augmentations are used for increasing the diversity of the data and thus for helping to reduce overfitting. The available augmentation options are
-- 
+- `identity`: This augmentation option only resizes the image to the required model input size (224 x 224) and transforms it into a PyTorch tensor form. This is the choice when no augmentations should be applied during model training.
+- `rotate`: Image is rotated randomly between zero and 180 degrees. 
+- `color`: The brightness, hue, contrast and saturation values of the image are transformed randomly on a defined scale. 
+- `sharpness`: The sharpness of the image is transformed randomly on a defined scale.
+- `blur`: The blurriness of the image is transformed randomly on a defined scale.
+- `pad`: Padding of 3, 10 or 25 pixels is added to all sides of the image. The color of the padding is either black or white.
+- `perspective`: Transforms the perspective of the image based on randomly chosen values from a defined scale.
+- `None`: This option selects randomly an augmentation for each image from the above list. The options are weighted so that 'identity' is chosen with 40% probability, while each of the other augmentations has 10% probability of being selected.
 
+More information and examples of the different image transform options are available [here](https://pytorch.org/vision/stable/auto_examples/plot_transforms.html#sphx-glr-auto-examples-plot-transforms-py).
 
 Parameter:
 -  `augment_choice` defines which image augmentation(s) are used during model training. Default value is `None`.  
