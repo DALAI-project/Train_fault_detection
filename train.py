@@ -121,7 +121,6 @@ class ImageDataset(Dataset):
             
         return image, label
 
-
 def initialize_model():
     """Function for initializing pretrained neural network model (DenseNet121)."""
     model_ft = models.densenet121(weights=torchvision.models.DenseNet121_Weights.IMAGENET1K_V1)
@@ -131,13 +130,11 @@ def initialize_model():
 
     return model_ft, input_size
 
-
 def collate_fn(batch):
     """Helper function for creating data batches."""
     batch = list(filter(lambda x: x is not None, batch))
  
     return torch.utils.data.dataloader.default_collate(batch)
-
 
 def initialize_dataloaders(data_dict, input_size):
     """Function for initializing datasets and dataloaders."""
@@ -149,7 +146,6 @@ def initialize_dataloaders(data_dict, input_size):
     validation_dataloader = DataLoader(validation_dataset, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True, num_workers=4)
     
     return {'train': train_dataloader, 'val': validation_dataloader}
-
 
 def get_criterion(data_dict):
     """Function for generating class weights and initializing the loss function."""
@@ -183,7 +179,6 @@ def get_optimizer(model):
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=0, verbose=True)
 
     return optimizer, scheduler
-
 
 def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
     """Function for model training and validation."""
@@ -270,7 +265,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                 val_loss_history.append(epoch_loss)
                 val_f1_history.append(epoch_f1)
                 if epoch_f1 > best_f1:
-                    # Weights of the model with best accuracy are copied and saved
+                    # Model with best F1 score is saved
                     utils.save_model(model, 224, args.save_model_format, args.save_model_path, args.date)
                     best_f1 = epoch_f1
                     best_epoch = epoch
@@ -294,11 +289,14 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
+    print('Best val F1: {:4f}'.format(best_f1))
+    # Returns model with the weights from the best epoch (based on validation accuracy)
     hist_dict = {'tr_acc': tr_acc_history, 
                  'val_acc': val_acc_history, 
                  'val_loss': val_loss_history,
+                 'val_f1': val_f1_history,
                  'tr_loss': tr_loss_history,
+                 'tr_f1': tr_f1_history,
                  'lr1': lr1_history,
                  'lr2': lr2_history}
 
@@ -322,7 +320,6 @@ def main():
     # Train and evaluate model
     hist_dict = train_model(model, dataloaders_dict, criterion, optimizer, scheduler)
     print('Damaged images: ', damaged_images)
-    #utils.save_model(model, input_size, args.save_model_format, args.save_model_path, args.date)
     utils.plot_metrics(hist_dict, args.results_folder, args.date)
 
 main()
