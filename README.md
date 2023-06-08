@@ -107,3 +107,6 @@ More information and examples of the different image transform options are avail
 Parameter:
 -  `augment_choice` defines which image augmentation(s) are used during model training. Default value is `None`.  
 
+The parameter value can be set in command line when initiating training:
+
+`python --augment_choice None train.py`
