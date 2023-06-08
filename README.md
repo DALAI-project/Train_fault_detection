@@ -69,7 +69,7 @@ Parameters:
 
 The parameter values can be set in command line when initiating training:
 
-`python --tr_data_folder ./data/faulty/train --val_data_folder ./data/faulty/val --tr_ok_folder ./data/ok/train --val_ok_folder ./data/ok/val train.py`
+`python train.py --tr_data_folder ./data/faulty/train --val_data_folder ./data/faulty/val --tr_ok_folder ./data/ok/train --val_ok_folder ./data/ok/val`
 
 The accepted input image file types are .jpg, .png and .tiff. Pdf files should be transformed into one of these images formats before used as an input to the model.
 
@@ -86,7 +86,7 @@ Parameters:
 
 The parameter values can be set in command line when initiating training:
 
-`python --results_folder ./results --save_model_path ./models/ --save_model_format onnx train.py`
+`python train.py --results_folder ./results --save_model_path ./models/ --save_model_format onnx`
 
 ### Parameters related to model training
 
@@ -110,7 +110,7 @@ Parameters:
 
 The parameter values can be set in command line when initiating training:
 
-`python --lr 0.0001 --batch_size 16 --num_epochs 15 --early_stop_threshold 2 --random_seed 8765 --device cpu train.py`
+`python train.py --lr 0.0001 --batch_size 16 --num_epochs 15 --early_stop_threshold 2 --random_seed 8765 --device cpu`
 
 ### Parameter for data augmentation
 
@@ -131,4 +131,4 @@ Parameter:
 
 The parameter value can be set in command line when initiating training:
 
-`python --augment_choice None train.py`
+`python train.py --augment_choice None`
