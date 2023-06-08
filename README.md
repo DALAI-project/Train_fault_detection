@@ -98,16 +98,19 @@ Batch size defines the number of images that are processed before the model weig
 
 Random seed parameter is used for setting the seed for initializing random number generation. This makes the training results reproducible when using the same seed, model and data. 
 
+The `device` parameters defines whether cpu or gpu is used for model training.
+
 Parameters:
 - `lr` defines the learning rate used for adjusting the weights of the base model layers. The learning rate for the classification layer is always 10 times larger. Default value for the base learning rate is `0.0001`.
 - `batch_size` defines the number of images in one batch. Default batch size is `16`.
 - `num_epochs` sets the number of times the model goes through the entire training dataset. Default value is `15`.
 - `early_stop_threshold` defines the number of epochs that training can go on without improvement in the chosen metric (validation F1 score by default). Default value is `2`.
 -  `random_seed` sets the seed for initializing random number generation. Default value is `8765`.
+-  `device` defines whether cpu or gpu is used for model training. Value can be for example `cpu`, `cuda:0` or `cuda:1`, depending on the specific gpu that is used.
 
 The parameter values can be set in command line when initiating training:
 
-`python --lr 0.0001 --batch_size 16 --num_epochs 15 --early_stop_threshold 2 --random_seed 8765 train.py`
+`python --lr 0.0001 --batch_size 16 --num_epochs 15 --early_stop_threshold 2 --random_seed 8765 --device cpu train.py`
 
 ### Parameter for data augmentation
 
