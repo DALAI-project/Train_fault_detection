@@ -43,6 +43,8 @@ parser.add_argument('--batch_size', type=int, default=16,
                     help='Batch size used for model training. ')
 parser.add_argument('--lr', type=float, default=0.0001,
                     help='Base learning rate.')
+parser.add_argument('--device', type=str, default='cpu',
+                    help='Defines whether the model is trained using cpu or gpu.')
 parser.add_argument('--num_classes', type=int, default=2,
                     help='Number of classes used in classification.')
 parser.add_argument('--num_epochs', type=int, default=15,
@@ -65,7 +67,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 # Detects if a GPU is available
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = args.device
 
 # List for saving the names of damaged images
 damaged_images = []
