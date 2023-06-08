@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import  models
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.utils import class_weight
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
 import time
 import random
@@ -91,11 +91,11 @@ def get_datapaths():
 
     data_dict = {'tr_data': tr_files, 'tr_labels': tr_labels, 
                 'val_data': val_files, 'val_labels': val_labels}
-
+    
     return data_dict
 
 class ImageDataset(Dataset):
-    """PyTorch Dataset class is used for generating the training and validation datasets."""
+    """PyTorch Dataset class is used for generating training and validation datasets."""
     def __init__(self, img_paths, img_labels, transform=None, target_transform=None):
         self.img_paths = img_paths
         self.img_labels = img_labels
@@ -118,11 +118,12 @@ class ImageDataset(Dataset):
             image = self.transform(image.convert("RGB"))
         if self.target_transform:
             label = self.target_transform(label)
+            
         return image, label
 
 
 def initialize_model():
-    """Function for initializing pretrained neural network model."""
+    """Function for initializing pretrained neural network model (DenseNet121)."""
     model_ft = models.densenet121(weights=torchvision.models.DenseNet121_Weights.IMAGENET1K_V1)
     num_ftrs = model_ft.classifier.in_features
     model_ft.classifier = nn.Linear(num_ftrs, args.num_classes)
@@ -134,27 +135,24 @@ def initialize_model():
 def collate_fn(batch):
     """Helper function for creating data batches."""
     batch = list(filter(lambda x: x is not None, batch))
+ 
     return torch.utils.data.dataloader.default_collate(batch)
 
 
 def initialize_dataloaders(data_dict, input_size):
     """Function for initializing datasets and dataloaders."""
-    #Transformations for train and validation images
-    data_transforms = RandAug(input_size, args.augment_choice)
-    
     # Train and validation datasets 
-    train_dataset = ImageDataset(img_paths=data_dict['tr_data'], img_labels=data_dict['tr_labels'],  transform=data_transforms)
-    validation_dataset = ImageDataset(img_paths=data_dict['val_data'], img_labels=data_dict['val_labels'], transform=None)
+    train_dataset = ImageDataset(img_paths=data_dict['tr_data'], img_labels=data_dict['tr_labels'],  transform=RandAug(input_size, args.augment_choice))
+    validation_dataset = ImageDataset(img_paths=data_dict['val_data'], img_labels=data_dict['val_labels'], transform=RandAug(input_size, 'identity'))
     # Train and validation dataloaders
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True, num_workers=4)
     validation_dataloader = DataLoader(validation_dataset, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True, num_workers=4)
-    dataloaders_dict = {'train': train_dataloader, 'val': validation_dataloader}
-
-    return dataloaders_dict
+    
+    return {'train': train_dataloader, 'val': validation_dataloader}
 
 
 def get_criterion(data_dict):
-    """Function for generating class weights and for initializing the loss function."""
+    """Function for generating class weights and initializing the loss function."""
     y = np.asarray(data_dict['tr_labels'])
     # Class weights are used for compensating the unbalance 
     # in the number of training data from the two classes
@@ -165,7 +163,6 @@ def get_criterion(data_dict):
     criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
 
     return criterion
-
 
 def get_optimizer(model):
     """Function for initializing the optimizer."""
@@ -180,8 +177,7 @@ def get_optimizer(model):
             {'params': params_1, 'lr': args.lr},
             {'params': params_2, 'lr': args.lr * 10}
             ]
-    # Stochastic gradient descent optimizer
-    #optimizer = torch.optim.SGD(params_to_update, args.lr, momentum=0.9)
+    # Adam optimizer
     optimizer = torch.optim.Adam(params_to_update, args.lr)
     # Scheduler reduces learning rate when validation accuracy does not improve for an epoch
     scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=0, verbose=True)
@@ -192,20 +188,28 @@ def get_optimizer(model):
 def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
     """Function for model training and validation."""
     since = time.time()
-    tr_acc_history = []
-    val_acc_history = []
-    val_loss_history = []
+    # Lists for saving train and validation metrics for each epoch
     tr_loss_history = []
+    tr_acc_history = []
+    tr_f1_history = []
+    val_loss_history = []
+    val_acc_history = []
+    val_f1_history = []
+    # Lists for saving learning rates for the 2 parameter groups
     lr1_history = []
     lr2_history = []
-    #best_model_wts = copy.deepcopy(model.state_dict())
-    best_acc = 0
+    
+    # Best F1 value and best epoch are saved in variables
+    best_f1 = 0
     best_epoch = 0
     early_stop = False
 
+    # Train / validation loop
     for epoch in tqdm(range(args.num_epochs)):
+        # Save learning rates for the epoch
         lr1_history.append(optimizer.param_groups[0]["lr"])
         lr2_history.append(optimizer.param_groups[1]["lr"])
+        
         print('Epoch {}/{}'.format(epoch+1, args.num_epochs))
         print('-' * 10)
 
@@ -218,6 +222,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
 
             running_loss = 0.0
             running_corrects = 0
+            running_f1 = 0.0
 
             # Iterate over data in batch
             for inputs, labels in dataloaders[phase]:
@@ -227,44 +232,47 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                     inputs = inputs.to(device)
                     labels = labels.long().to(device)
 
-                    # zero the parameter gradients
+                    # Zero the parameter gradients
                     optimizer.zero_grad()
 
-                    # track history only in training phase
+                    # Track history only in training phase
                     with torch.set_grad_enabled(phase == 'train'):
                         # Get model outputs and calculate loss
-                        # Special case for inception because in training it has an auxiliary output. In train
-                        # mode we calculate the loss by summing the final output and the auxiliary output
-                        # but in testing we only consider the final output.
-
                         outputs = model(inputs)
                         loss = criterion(outputs, labels)
-
+                        # Model predictions of the image labels for the batch
                         _, preds = torch.max(outputs, 1)
 
-                        # backward + optimize only if in training phase
+                        # Backward + optimize only if in training phase
                         if phase == 'train':
                             loss.backward()
                             optimizer.step()
+                    
+                    # Get weighted F1 score for the results
+                    precision_recall_fscore = precision_recall_fscore_support(labels.data.detach().cpu().numpy(), preds.detach().cpu().numpy(), average='weighted', zero_division=0)
+                    f1_score = precision_recall_fscore[2]
 
                     # update statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
+                    running_f1 += f1_score
 
-            # Calculate loss and accuracy for the epoch
+            # Calculate loss, accuracy and F1 score for the epoch
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+            epoch_f1 = running_f1 / len(dataloaders[phase])
 
-            print('Epoch {} - {} - Loss: {:.4f} Acc: {:.4f}'.format(epoch+1, phase, epoch_loss, epoch_acc))
-
+            print('\nEpoch {} - {} - Loss: {:.4f} Acc: {:.4f} F1: {:.4f}\n'.format(epoch+1, phase, epoch_loss, epoch_acc, epoch_f1))
+            
+            # Validation step
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
                 val_loss_history.append(epoch_loss)
-                if epoch_acc > best_acc:
+                val_f1_history.append(epoch_f1)
+                if epoch_f1 > best_f1:
                     # Weights of the model with best accuracy are copied and saved
                     utils.save_model(model, 224, args.save_model_format, args.save_model_path, args.date)
-                    #best_model_wts = copy.deepcopy(model.state_dict())
-                    best_acc = epoch_acc
+                    best_f1 = epoch_f1
                     best_epoch = epoch
                 elif epoch - best_epoch > args.early_stop_threshold:
                     # terminates the training loop if validation accuracy has not improved
@@ -275,19 +283,18 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
             elif phase == 'train':
                 tr_acc_history.append(epoch_acc)
                 tr_loss_history.append(epoch_loss)
+                tr_f1_history.append(epoch_f1)
 
         # Break outer loop if early stopping condition is activated
         if early_stop:
             break
-
+        # Take scheduler step
         if scheduler:
             scheduler.step(val_acc_history[-1])
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
-    # Returns model with the weights from the best epoch (based on validation accuracy)
-    #model.load_state_dict(best_model_wts)
     hist_dict = {'tr_acc': tr_acc_history, 
                  'val_acc': val_acc_history, 
                  'val_loss': val_loss_history,
