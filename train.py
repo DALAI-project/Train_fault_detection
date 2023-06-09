@@ -267,6 +267,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                     print('\nF1 score {:.4f} improved from {:.4f}. Saving the model\n'.format(epoch_f1, best_f1))
                     # Model with best F1 score is saved
                     utils.save_model(model, 224, args.save_model_format, args.save_model_path, args.date)
+                    model = model.to(args.device)
                     best_f1 = epoch_f1
                     best_epoch = epoch
                 elif epoch - best_epoch > args.early_stop_threshold:
