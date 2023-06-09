@@ -267,6 +267,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                 val_loss_history.append(epoch_loss)
                 val_f1_history.append(epoch_f1)
                 if epoch_f1 > best_f1:
+                    print('\nF1 score {:.4f} improved from {:.4f}. Saving the model\n'.format(epoch_f1, best_f1))
                     # Model with best F1 score is saved
                     utils.save_model(model, 224, args.save_model_format, args.save_model_path, args.date)
                     best_f1 = epoch_f1
