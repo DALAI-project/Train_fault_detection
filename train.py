@@ -248,7 +248,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
 
                     # update statistics
                     running_loss += loss.item() * inputs.size(0)
-                    running_corrects += torch.sum(preds == labels.data)
+                    running_corrects += torch.sum(preds == labels.data).cpu()
                     running_f1 += f1_score
 
             # Calculate loss, accuracy and F1 score for the epoch
