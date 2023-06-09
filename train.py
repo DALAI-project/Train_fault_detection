@@ -82,7 +82,7 @@ def get_datapaths():
     tr_files = tr_files + tr_ok_files
     val_files = val_files + val_ok_files
 
-    print('Training data with faulty images: ', len(tr_files))
+    print('\nTraining data with faulty images: ', len(tr_files))
     print('Training data without faulty images: ', len(tr_ok_files))
 
     print('Validation data with faulty images: ', len(val_files))
@@ -153,7 +153,7 @@ def get_criterion(data_dict):
     # in the number of training data from the two classes
     class_weights=class_weight.compute_class_weight(class_weight='balanced', classes=np.unique(y), y=y)
     class_weights=torch.tensor(class_weights, dtype=torch.float).to(args.device)
-    print('Class weights: ', class_weights)
+    print('\nClass weights: ', class_weights.tolist())
      # Cross Entropy Loss function
     criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
 
@@ -264,7 +264,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                 val_loss_history.append(epoch_loss)
                 val_f1_history.append(epoch_f1)
                 if epoch_f1 > best_f1:
-                    print('\nF1 score {:.4f} improved from {:.4f}. Saving the model\n'.format(epoch_f1, best_f1))
+                    print('\nF1 score {:.4f} improved from {:.4f}. Saving the model.\n'.format(epoch_f1, best_f1))
                     # Model with best F1 score is saved
                     utils.save_model(model, 224, args.save_model_format, args.save_model_path, args.date)
                     model = model.to(args.device)
@@ -289,8 +289,8 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
             scheduler.step(val_acc_history[-1])
 
     time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val F1: {:4f}'.format(best_f1))
+    print('\nTraining complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    print('Best validation F1 score: {:.4f}'.format(best_f1))
     # Returns model with the weights from the best epoch (based on validation accuracy)
     hist_dict = {'tr_acc': tr_acc_history, 
                  'val_acc': val_acc_history, 
@@ -314,7 +314,7 @@ def main():
     #print(model_ft)
     # Send the model to GPU (if available)
     model = model.to(args.device)
-    print("Initializing Datasets and Dataloaders...")
+    print("\nInitializing Datasets and Dataloaders...")
     dataloaders_dict = initialize_dataloaders(data_dict, input_size)
     criterion = get_criterion(data_dict)
     optimizer, scheduler = get_optimizer(model)
