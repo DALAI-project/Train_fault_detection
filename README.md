@@ -98,7 +98,7 @@ Batch size defines the number of images that are processed before the model weig
 
 Random seed parameter is used for setting the seed for initializing random number generation. This makes the training results reproducible when using the same seed, model and data. 
 
-The `device` parameters defines whether cpu or gpu is used for model training.
+The `device` parameters defines whether cpu or gpu is used for model training. Currently the code does not support multi-gpu training.
 
 Parameters:
 - `lr` defines the learning rate used for adjusting the weights of the base model layers. The learning rate for the classification layer is always 10 times larger. Default value for the base learning rate is `0.0001`.
