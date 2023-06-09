@@ -20,13 +20,16 @@ def set_seed(random_seed):
     print(f"Random seed set as {random_seed}")
 
 def save_model(model, input_size, save_model_format, save_model_path, date):
-    """Function for saving the model in .pth or .onnx format."""
+    """Function for saving the model in .pth or .onnx format.
+    Code modified from 
+    https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html"""
     if save_model_format == 'onnx':
         onnx_model_path = os.path.join(save_model_path, 'densenet_' + date + '.onnx')
         # Random batch size
         batch_size = 1
         # Random input to the model (with correct dimensions)
         x = torch.randn(batch_size, 3, input_size, input_size, requires_grad=True)
+        model = model.to('cpu')
         torch_out = model(x)
 
         # Export the model
