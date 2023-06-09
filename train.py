@@ -66,9 +66,6 @@ args = parser.parse_args()
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
-# Detects if a GPU is available
-device = args.device
-
 # List for saving the names of damaged images
 damaged_images = []
  
@@ -155,7 +152,7 @@ def get_criterion(data_dict):
     # Class weights are used for compensating the unbalance 
     # in the number of training data from the two classes
     class_weights=class_weight.compute_class_weight(class_weight='balanced', classes=np.unique(y), y=y)
-    class_weights=torch.tensor(class_weights, dtype=torch.float)
+    class_weights=torch.tensor(class_weights, dtype=torch.float).to(args.device)
     print('Class weights: ', class_weights)
      # Cross Entropy Loss function
     criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
@@ -226,8 +223,8 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
                 if dataloaders[phase] is None:
                     continue
                 else:
-                    inputs = inputs.to(device)
-                    labels = labels.long().to(device)
+                    inputs = inputs.to(args.device)
+                    labels = labels.long().to(args.device)
 
                     # Zero the parameter gradients
                     optimizer.zero_grad()
@@ -315,7 +312,7 @@ def main():
     # Print the model architecture
     #print(model_ft)
     # Send the model to GPU (if available)
-    model = model.to(device)
+    model = model.to(args.device)
     print("Initializing Datasets and Dataloaders...")
     dataloaders_dict = initialize_dataloaders(data_dict, input_size)
     criterion = get_criterion(data_dict)
