@@ -59,7 +59,7 @@ def save_model(model, input_size, save_model_format, save_model_path, date):
         onnx_out = onnx_session.run(None, onnx_inputs)
         # compare ONNX Runtime and PyTorch results
         np.testing.assert_allclose(to_numpy(torch_out), onnx_out[0], rtol=1e-03, atol=1e-05)
-        print("Exported model has been tested with ONNXRuntime, and the result looks good!")
+        print("Exported model has been tested with ONNXRuntime, and the result looks good!\n")
 
     else:
         pytorch_model_path = os.path.join(save_model_path, 'densenet_' + date + '.pth')
