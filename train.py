@@ -286,7 +286,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler=None):
             break
         # Take scheduler step
         if scheduler:
-            scheduler.step(val_acc_history[-1])
+            scheduler.step(val_f1_history[-1])
 
     time_elapsed = time.time() - since
     print('\nTraining complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
