@@ -106,7 +106,7 @@ class ImageDataset(Dataset):
     def __getitem__(self, idx):
         img_path = self.img_paths[idx]
         try:
-            image = Image.open(img_path)
+            image = Image.open(img_path).convert('RGB')
             label = self.img_labels[idx]
         except:
             # Image is considered damaged if reading the image fails
