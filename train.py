@@ -10,7 +10,6 @@ from sklearn.utils import class_weight
 from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
 import time
-import random
 import argparse
 from tqdm import tqdm
 from PIL import Image, ImageFile
@@ -68,9 +67,9 @@ Image.MAX_IMAGE_PIXELS = None
 
 # List for saving the names of damaged images
 damaged_images = []
- 
+
 def get_datapaths():
-  """Function for loading train and validation data."""
+    """Function for loading train and validation data."""
     tr_files = list(Path(args.tr_data_folder).glob('*'))
     tr_ok_files = list(Path(args.tr_ok_folder).glob('*'))
     val_files = list(Path(args.val_data_folder).glob('*'))
@@ -89,8 +88,8 @@ def get_datapaths():
     print('Validation data without faulty images: ', len(val_ok_files))
 
     data_dict = {'tr_data': tr_files, 'tr_labels': tr_labels, 
-                'val_data': val_files, 'val_labels': val_labels}
-    
+            'val_data': val_files, 'val_labels': val_labels}
+
     return data_dict
 
 class ImageDataset(Dataset):
@@ -323,4 +322,5 @@ def main():
     print('Damaged images: ', damaged_images)
     utils.plot_metrics(hist_dict, args.results_folder, args.date)
 
-main()
+if __name__ == '__main__':
+    main()
